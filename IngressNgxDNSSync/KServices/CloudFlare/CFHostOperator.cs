@@ -8,9 +8,10 @@ using System.Threading.Tasks;
 
 namespace IngressNgxDNSSync.KServices.CloudFlare
 {
-	[HostOperator]
 	public class CFHostOperator : HostOperator, IHostOperator
 	{
+		public bool IsAvailable => !string.IsNullOrEmpty( APIClient.APIToken );
+
 		public CFHostOperator( bool DryRun ) : base( DryRun ) { }
 
 		public async void Update( string[] AddedHosts, string[] RemovedHosts )

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace IngressNgxDNSSync
 {
@@ -18,9 +17,8 @@ namespace IngressNgxDNSSync
 			return AppDomain.CurrentDomain.GetAssemblies()
 				.SelectMany( s => s.GetTypes() )
 				.Where( x => IFace.IsAssignableFrom( x ) && !x.IsInterface )
-				.Select( x => {
-					return ( IHostOperator ) Activator.CreateInstance( x, Args );
-				} );
+				.Select( x => ( IHostOperator ) Activator.CreateInstance( x, Args ) )
+				.Where( x => x.IsAvailable );
 		}
 
 		private static JsonSerializerOptions DebugJsonPrint = new() { WriteIndented = true };
@@ -38,9 +36,13 @@ namespace IngressNgxDNSSync
 			string[] RemovedHosts = OldHosts.Except( NewHosts ).ToArray();
 			string[] AddedHosts = NewHosts.Except( OldHosts ).ToArray();
 
-			foreach ( IHostOperator Op in GetHostOperators( AdmissionReview.Request.DryRun ) )
+			IHostOperator[] Operators = GetHostOperators( AdmissionReview.Request.DryRun ).ToArray();
+			if ( !Operators.Any() )
+				Ext.GetLogger<Operations>().LogError( "No available operators" );
+
+			foreach ( IHostOperator Operator in Operators )
 			{
-				Op.Update( AddedHosts, RemovedHosts );
+				Operator.Update( AddedHosts, RemovedHosts );
 			}
 		}
 

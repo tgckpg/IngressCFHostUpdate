@@ -13,7 +13,8 @@ namespace IngressNgxDNSSync.KServices.CloudFlare
 {
 	public class APIClient
 	{
-		private static string APIToken = Environment.GetEnvironmentVariable( "CF_API_TOKEN" );
+		internal static string APIToken = Environment.GetEnvironmentVariable( "CF_API_TOKEN" );
+
 		const string ServiceURI = "https://api.cloudflare.com/client/v4";
 
 		public static async Task<ListResult<T>> List<T>( params string[] Args )

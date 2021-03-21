@@ -4,6 +4,7 @@ namespace IngressNgxDNSSync.KServices
 {
 	public interface IHostOperator
 	{
+		bool IsAvailable { get; }
 		void Update( string[] addedHosts, string[] removedHosts );
 		void Sync();
 	}
