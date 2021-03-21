@@ -1,0 +1,209 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cf-host-update
+spec:
+  selector:
+    matchLabels:
+      app: cf-host-update
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cf-host-update
+    spec:
+      containers:
+        - name: app
+          image: 192.168.80.4:32000/cf-host-update:b00002
+          env:
+            - name: CA_CERT
+              value: /certs/cert
+            - name: CA_KEY
+              value: /certs/key
+          volumeMounts:
+            - name: webhook-cert
+              mountPath: /certs/
+              readOnly: true
+      volumes:
+        - name: webhook-cert
+          secret:
+            secretName: cf-host-update
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cf-host-update
+spec:
+  selector:
+    app: cf-host-update
+  ports:
+    - name: https
+      port: 443
+      targetPort: 443
+
+---
+
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: cf-host-update-webhook
+webhooks:
+- name: "cf-host-update.ingress.kubernetes.io"
+  rules:
+  - apiGroups:   ["extensions", "networking.k8s.io"]
+    apiVersions: ["v1", "v1beta1"]
+    operations:  ["CREATE", "UPDATE"]
+    resources:   ["ingresses"]
+    scope:       "*"
+  clientConfig:
+    service:
+      name: "cf-host-update"
+      namespace: "ingress-nginx"
+      path: "/validating-webhook"
+  admissionReviewVersions: ["v1", "v1beta1"]
+  sideEffects: None
+  timeoutSeconds: 5
+
+---
+
+# Reference: ingress-nginx/templates/admission-webhooks/job-patch/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cf-host-update-account
+
+---
+
+# Reference: ingress-nginx/templates/admission-webhooks/job-patch/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cf-host-update-crole
+rules:
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - validatingwebhookconfigurations
+    verbs:
+      - get
+      - update
+---
+
+# Reference: ingress-nginx/templates/admission-webhooks/job-patch/clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cf-host-update-crole-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cf-host-update-crole
+subjects:
+  - kind: ServiceAccount
+    name: cf-host-update-account
+    namespace: ingress-nginx
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cf-host-update-role
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - secrets
+    verbs:
+      - get
+      - create
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cf-host-update
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cf-host-update-role
+subjects:
+  - kind: ServiceAccount
+    name: cf-host-update-account
+
+---
+
+# Reference: ingress-nginx/templates/admission-webhooks/job-patch/job-createSecret.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cf-host-update-create
+  labels:
+    app: cf-host-update
+spec:
+  template:
+    metadata:
+      name: cf-host-update
+      labels:
+        app: cf-host-update
+    spec:
+      containers:
+        - name: create
+          image: docker.io/jettech/kube-webhook-certgen:v1.5.1
+          imagePullPolicy: IfNotPresent
+          args:
+            - create
+            - --host=cf-host-update,cf-host-update.$(POD_NAMESPACE).svc
+            - --namespace=$(POD_NAMESPACE)
+            - --secret-name=cf-host-update
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+      restartPolicy: OnFailure
+      serviceAccount: cf-host-update-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 2000
+
+---
+
+# Reference: ingress-nginx/templates/admission-webhooks/job-patch/job-patchWebhook.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cf-host-update-patch
+  labels:
+    app: cf-host-update
+spec:
+  template:
+    metadata:
+      name: cf-host-update-patch
+      labels:
+        app: cf-host-update
+    spec:
+      containers:
+        - name: patch
+          image: docker.io/jettech/kube-webhook-certgen:v1.5.1
+          imagePullPolicy: IfNotPresent
+          args:
+            - patch
+            - --webhook-name=cf-host-update-webhook
+            - --namespace=$(POD_NAMESPACE)
+            - --patch-mutating=false
+            - --secret-name=cf-host-update
+            - --patch-failure-policy=Fail
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+      restartPolicy: OnFailure
+      serviceAccountName: cf-host-update-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 2000

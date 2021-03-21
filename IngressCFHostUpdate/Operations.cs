@@ -1,9 +1,11 @@
 ﻿using IngressCFHostUpdate.KServices.CloudFlare.APIObjects;
+using IngressCFHostUpdate.KServices.Kubernetes.WebhookServer.APIObjects;
 using k8s;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace IngressCFHostUpdate
@@ -56,5 +58,11 @@ namespace IngressCFHostUpdate
 				}
 			}
 		}
+
+		public static void TriggerAdmission( KAdmissionReview AdmissionReview )
+		{
+			Console.WriteLine( JsonSerializer.Serialize( AdmissionReview ) );
+		}
+
 	}
 }
