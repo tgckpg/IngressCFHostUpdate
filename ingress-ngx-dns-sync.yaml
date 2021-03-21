@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: cf-host-update
+  name: dns-sync
 spec:
   selector:
-    app: cf-host-update
+    app: dns-sync
   ports:
     - name: https
       port: 443
@@ -15,9 +15,9 @@ spec:
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  name: cf-host-update-webhook
+  name: dns-sync-webhook
 webhooks:
-- name: "cf-host-update.ingress.kubernetes.io"
+- name: "dns-sync.ingress.kubernetes.io"
   rules:
   - apiGroups:   ["extensions", "networking.k8s.io"]
     apiVersions: ["v1", "v1beta1"]
@@ -26,7 +26,7 @@ webhooks:
     scope:       "*"
   clientConfig:
     service:
-      name: "cf-host-update"
+      name: "dns-sync"
       namespace: "ingress-nginx"
       path: "/validating-webhook"
   admissionReviewVersions: ["v1", "v1beta1"]
@@ -39,27 +39,27 @@ webhooks:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: cf-host-update-account
+  name: dns-sync-account
 
 ---
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cf-host-update
+  name: dns-sync
 spec:
   selector:
     matchLabels:
-      app: cf-host-update
+      app: dns-sync
   replicas: 1
   template:
     metadata:
       labels:
-        app: cf-host-update
+        app: dns-sync
     spec:
       containers:
         - name: app
-          image: 192.168.80.4:32000/cf-host-update:b00007
+          image: 192.168.80.4:32000/dns-sync:b00008
           env:
             - name: CA_CERT
               value: /certs/cert
@@ -72,8 +72,8 @@ spec:
       volumes:
         - name: webhook-cert
           secret:
-            secretName: cf-host-update
-      serviceAccount: cf-host-update-account
+            secretName: dns-sync
+      serviceAccount: dns-sync-account
 
 ---
 
@@ -81,7 +81,7 @@ spec:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: cf-host-update-crole
+  name: dns-sync-crole
 rules:
   - apiGroups: ["admissionregistration.k8s.io"]
     resources: ["validatingwebhookconfigurations"]
@@ -95,14 +95,14 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: cf-host-update-crole-binding
+  name: dns-sync-crole-binding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cf-host-update-crole
+  name: dns-sync-crole
 subjects:
   - kind: ServiceAccount
-    name: cf-host-update-account
+    name: dns-sync-account
     namespace: ingress-nginx
 
 ---
@@ -110,7 +110,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: cf-host-update-role
+  name: dns-sync-role
 rules:
   - apiGroups:
       - ''
@@ -125,14 +125,14 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: cf-host-update
+  name: dns-sync
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: cf-host-update-role
+  name: dns-sync-role
 subjects:
   - kind: ServiceAccount
-    name: cf-host-update-account
+    name: dns-sync-account
 
 ---
 
@@ -140,15 +140,15 @@ subjects:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: cf-host-update-create
+  name: dns-sync-create
   labels:
-    app: cf-host-update
+    app: dns-sync
 spec:
   template:
     metadata:
-      name: cf-host-update
+      name: dns-sync
       labels:
-        app: cf-host-update
+        app: dns-sync
     spec:
       containers:
         - name: create
@@ -156,16 +156,16 @@ spec:
           imagePullPolicy: IfNotPresent
           args:
             - create
-            - --host=cf-host-update,cf-host-update.$(POD_NAMESPACE).svc
+            - --host=dns-sync,dns-sync.$(POD_NAMESPACE).svc
             - --namespace=$(POD_NAMESPACE)
-            - --secret-name=cf-host-update
+            - --secret-name=dns-sync
           env:
             - name: POD_NAMESPACE
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
       restartPolicy: OnFailure
-      serviceAccount: cf-host-update-account
+      serviceAccount: dns-sync-account
       securityContext:
         runAsNonRoot: true
         runAsUser: 2000
@@ -176,15 +176,15 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: cf-host-update-patch
+  name: dns-sync-patch
   labels:
-    app: cf-host-update
+    app: dns-sync
 spec:
   template:
     metadata:
-      name: cf-host-update-patch
+      name: dns-sync-patch
       labels:
-        app: cf-host-update
+        app: dns-sync
     spec:
       containers:
         - name: patch
@@ -192,10 +192,10 @@ spec:
           imagePullPolicy: IfNotPresent
           args:
             - patch
-            - --webhook-name=cf-host-update-webhook
+            - --webhook-name=dns-sync-webhook
             - --namespace=$(POD_NAMESPACE)
             - --patch-mutating=false
-            - --secret-name=cf-host-update
+            - --secret-name=dns-sync
             - --patch-failure-policy=Fail
           env:
             - name: POD_NAMESPACE
@@ -203,7 +203,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
       restartPolicy: OnFailure
-      serviceAccountName: cf-host-update-account
+      serviceAccountName: dns-sync-account
       securityContext:
         runAsNonRoot: true
         runAsUser: 2000

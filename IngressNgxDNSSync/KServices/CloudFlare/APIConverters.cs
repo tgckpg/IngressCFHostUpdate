@@ -1,4 +1,4 @@
-﻿using IngressCFHostUpdate.KServices.CloudFlare.APIObjects;
+﻿using IngressNgxDNSSync.KServices.CloudFlare.APIObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace IngressCFHostUpdate.KServices.CloudFlare.APIConverters
+namespace IngressNgxDNSSync.KServices.CloudFlare.APIConverters
 {
 	public class DNSRecordPostConverter : JsonConverter<DNSRecord>
 	{

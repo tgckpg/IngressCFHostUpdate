@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 // Reference: https://docs.microsoft.com/en-us/dotnet/core/extensions/custom-logging-provider
-namespace IngressCFHostUpdate.Logging
+namespace IngressNgxDNSSync.Logging
 {
     public class ColorConsoleLoggerConfiguration
     {

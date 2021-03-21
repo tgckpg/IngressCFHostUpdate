@@ -1,7 +1,5 @@
-﻿using IngressCFHostUpdate.KServices;
-using IngressCFHostUpdate.KServices.CloudFlare.APIObjects;
-using IngressCFHostUpdate.KServices.Kubernetes.WebhookServer.APIObjects;
-using k8s;
+﻿using IngressNgxDNSSync.KServices;
+using IngressNgxDNSSync.KServices.Kubernetes.WebhookServer.APIObjects;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -10,7 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace IngressCFHostUpdate
+namespace IngressNgxDNSSync
 {
 	class Operations
 	{

@@ -5,16 +5,16 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
-COPY ["IngressCFHostUpdate/IngressCFHostUpdate.csproj", "IngressCFHostUpdate/"]
-RUN dotnet restore "IngressCFHostUpdate/IngressCFHostUpdate.csproj"
+COPY ["IngressNgxDNSSync/IngressNgxDNSSync.csproj", "IngressNgxDNSSync/"]
+RUN dotnet restore "IngressNgxDNSSync/IngressNgxDNSSync.csproj"
 COPY . .
-WORKDIR "/src/IngressCFHostUpdate"
-RUN dotnet build "IngressCFHostUpdate.csproj" -c Release -o /app/build
+WORKDIR "/src/IngressNgxDNSSync"
+RUN dotnet build "IngressNgxDNSSync.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "IngressCFHostUpdate.csproj" -c Release -o /app/publish
+RUN dotnet publish "IngressNgxDNSSync.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "IngressCFHostUpdate.dll"]
+ENTRYPOINT ["dotnet", "IngressNgxDNSSync.dll"]

@@ -1,4 +1,4 @@
-﻿using IngressCFHostUpdate.KServices.CloudFlare.APIObjects;
+﻿using IngressNgxDNSSync.KServices.CloudFlare.APIObjects;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +9,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace IngressCFHostUpdate.KServices.CloudFlare
+namespace IngressNgxDNSSync.KServices.CloudFlare
 {
 	public class APIClient
 	{

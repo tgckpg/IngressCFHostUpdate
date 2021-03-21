@@ -1,4 +1,4 @@
-﻿using IngressCFHostUpdate.KServices.CloudFlare.APIObjects;
+﻿using IngressNgxDNSSync.KServices.CloudFlare.APIObjects;
 using k8s;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IngressCFHostUpdate.KServices.CloudFlare
+namespace IngressNgxDNSSync.KServices.CloudFlare
 {
 	[HostOperator]
 	public class CFHostOperator : HostOperator, IHostOperator

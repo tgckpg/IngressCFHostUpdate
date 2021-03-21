@@ -1,11 +1,11 @@
-﻿using IngressCFHostUpdate.Logging;
+﻿using IngressNgxDNSSync.Logging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 
-namespace IngressCFHostUpdate
+namespace IngressNgxDNSSync
 {
 	class Program
 	{

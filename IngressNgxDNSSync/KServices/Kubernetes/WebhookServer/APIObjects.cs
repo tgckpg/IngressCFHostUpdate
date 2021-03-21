@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace IngressCFHostUpdate.KServices.Kubernetes.WebhookServer.APIObjects
+namespace IngressNgxDNSSync.KServices.Kubernetes.WebhookServer.APIObjects
 {
 	public class KUserInfo
 	{

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace IngressCFHostUpdate.KServices.CloudFlare.APIObjects
+namespace IngressNgxDNSSync.KServices.CloudFlare.APIObjects
 {
 	public class ListResult<T>
 	{

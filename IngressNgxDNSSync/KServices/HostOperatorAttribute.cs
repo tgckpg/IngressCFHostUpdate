@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IngressCFHostUpdate.KServices
+namespace IngressNgxDNSSync.KServices
 {
 	public class HostOperatorAttribute : Attribute
 	{

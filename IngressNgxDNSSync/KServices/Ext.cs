@@ -11,7 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IngressCFHostUpdate.KServices
+namespace IngressNgxDNSSync.KServices
 {
 	public static class Ext
 	{

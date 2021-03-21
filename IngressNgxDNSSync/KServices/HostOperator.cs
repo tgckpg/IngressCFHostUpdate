@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace IngressCFHostUpdate.KServices
+namespace IngressNgxDNSSync.KServices
 {
 	public interface IHostOperator
 	{

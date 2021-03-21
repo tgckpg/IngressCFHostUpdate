@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-namespace IngressCFHostUpdate.KServices
+namespace IngressNgxDNSSync.KServices
 {
 	[AttributeUsage( AttributeTargets.Class )]
 	public class APIPostConverterAttribute : Attribute

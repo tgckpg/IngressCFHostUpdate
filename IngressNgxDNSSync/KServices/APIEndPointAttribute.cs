@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IngressCFHostUpdate.KServices
+namespace IngressNgxDNSSync.KServices
 {
 	[AttributeUsage( AttributeTargets.Class )]
 	public class APIEndPointAttribute : Attribute

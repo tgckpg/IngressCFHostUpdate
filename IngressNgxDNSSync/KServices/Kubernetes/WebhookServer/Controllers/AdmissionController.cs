@@ -1,4 +1,4 @@
-﻿using IngressCFHostUpdate.KServices.Kubernetes.WebhookServer.APIObjects;
+﻿using IngressNgxDNSSync.KServices.Kubernetes.WebhookServer.APIObjects;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IngressCFHostUpdate.KServices.Kubernetes.WebhookServer.Controllers
+namespace IngressNgxDNSSync.KServices.Kubernetes.WebhookServer.Controllers
 {
 	[ApiController]
 	public class AdmissionController : Controller
