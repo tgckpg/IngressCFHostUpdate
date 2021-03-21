@@ -73,7 +73,7 @@ namespace IngressCFHostUpdate.KServices.CloudFlare
 				Url = string.Format( Url, Args );
 			}
 
-			LogDelete<T>( Args );
+			// LogDelete<T>( Args );
 
 			WebRequest Request = WebRequest.Create( Url );
 			Request.Headers.Add( HttpRequestHeader.Authorization, $"Bearer {APIToken}" );
