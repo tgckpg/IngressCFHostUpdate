@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore;
+﻿using IngressCFHostUpdate.Logging;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
-using System.IO;
 using System.Net;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 namespace IngressCFHostUpdate
@@ -12,14 +11,14 @@ namespace IngressCFHostUpdate
 	{
 #if DEBUG
 		const int HTTPS_PORT = 8443;
-		const int HTTP_PORT = 8080;
 #else
 		const int HTTPS_PORT = 443;
-		const int HTTP_PORT = 80;
 #endif
+		internal static IWebHost Host;
+
 		static void Main( string[] args )
 		{
-			IWebHost Host = WebHost.CreateDefaultBuilder()
+			Host = new WebHostBuilder()
 				.UseKestrel( options =>
 				{
 					// NOTE: Admissions Controller API must be in https
@@ -34,6 +33,16 @@ namespace IngressCFHostUpdate
 					{
 						listenOptions.UseHttps( new X509Certificate2( PEMCert.Export( X509ContentType.Pkcs12 ) ) );
 					} );
+				} )
+				.ConfigureLogging( options =>
+				{
+					// You'll get the following mystic error if to use addConsole, addDebug, addEventLog, etc.:
+					//    AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: PartialChain
+					options.ClearProviders()
+						.AddProvider( new ColorConsoleLoggerProvider( new ColorConsoleLoggerConfiguration() ) )
+						.AddProvider( new ColorConsoleLoggerProvider( new ColorConsoleLoggerConfiguration() { LogLevel = LogLevel.Error, Color = ConsoleColor.Red } ) )
+						.AddProvider( new ColorConsoleLoggerProvider( new ColorConsoleLoggerConfiguration() { LogLevel = LogLevel.Warning, Color = ConsoleColor.Yellow } ) )
+					;
 				} )
 				.UseStartup<KServices.Kubernetes.WebhookServer.Startup>()
 				.Build();

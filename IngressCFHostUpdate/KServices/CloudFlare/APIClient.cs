@@ -30,13 +30,18 @@ namespace IngressCFHostUpdate.KServices.CloudFlare
 			return await JsonSerializer.DeserializeAsync<ListResult<T>>( Response.GetResponseStream() );
 		}
 
-		public static async Task<Result<T>> Create<T>( T APIObject, params string[] Args )
+		public static async Task<Result<T>> Create<T>( T APIObject, bool DryRun, params string[] Args )
 		{
 			string Url = ServiceURI + "/" + typeof( T ).GetApiEndPoint().Create;
 			if ( Args.Any() )
 			{
 				Url = string.Format( Url, Args );
 			}
+
+			// LogCreate<T>( APIObject );
+
+			if ( DryRun )
+				return new Result<T>() { Item = APIObject };
 
 			WebRequest Request = WebRequest.Create( Url );
 			Request.Headers.Add( HttpRequestHeader.Authorization, $"Bearer {APIToken}" );
@@ -65,7 +70,7 @@ namespace IngressCFHostUpdate.KServices.CloudFlare
 			return await JsonSerializer.DeserializeAsync<Result<T>>( RespStream );
 		}
 
-		public static async Task<DeleteResult> Delete<T>( params string[] Args )
+		public static async Task<DeleteResult> Delete<T>( bool DryRun, params string[] Args )
 		{
 			string Url = ServiceURI + "/" + typeof( T ).GetApiEndPoint().Delete;
 			if ( Args.Any() )
@@ -74,6 +79,9 @@ namespace IngressCFHostUpdate.KServices.CloudFlare
 			}
 
 			// LogDelete<T>( Args );
+
+			if ( DryRun )
+				return new DeleteResult();
 
 			WebRequest Request = WebRequest.Create( Url );
 			Request.Headers.Add( HttpRequestHeader.Authorization, $"Bearer {APIToken}" );

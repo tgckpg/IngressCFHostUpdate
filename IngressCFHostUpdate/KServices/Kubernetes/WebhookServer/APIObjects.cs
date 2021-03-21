@@ -16,7 +16,7 @@ namespace IngressCFHostUpdate.KServices.Kubernetes.WebhookServer.APIObjects
 		[JsonPropertyName( "groups" )]
 		public string[] Groups { get; set; }
 		[JsonPropertyName( "extra" )]
-		public Dictionary<string,string[]> Extra { get; set; }
+		public Dictionary<string, string[]> Extra { get; set; }
 	}
 
 	public class KKind
@@ -39,7 +39,7 @@ namespace IngressCFHostUpdate.KServices.Kubernetes.WebhookServer.APIObjects
 		public string Resource { get; set; }
 	}
 
-	public class KRequest
+	public class KRequest<T>
 	{
 		[JsonPropertyName( "uid" )]
 		public string UID { get; set; }
@@ -69,9 +69,9 @@ namespace IngressCFHostUpdate.KServices.Kubernetes.WebhookServer.APIObjects
 		public KUserInfo UserInfo { get; set; }
 
 		[JsonPropertyName( "object" )]
-		public object Object { get; set; }
+		public T Object { get; set; }
 		[JsonPropertyName( "oldObject" )]
-		public object OldObject { get; set; }
+		public T OldObject { get; set; }
 		[JsonPropertyName( "options" )]
 		public object Options { get; set; }
 
@@ -79,7 +79,7 @@ namespace IngressCFHostUpdate.KServices.Kubernetes.WebhookServer.APIObjects
 		public bool DryRun { get; set; }
 	}
 
-	public class KAdmissionReview
+	public class KAdmissionReview<T>
 	{
 		[JsonPropertyName( "apiVersion" )]
 		public string APIVersion { get; set; }
@@ -87,7 +87,7 @@ namespace IngressCFHostUpdate.KServices.Kubernetes.WebhookServer.APIObjects
 		public string Kind { get; set; }
 
 		[JsonPropertyName( "request" )]
-		public KRequest Request { get; set; }
+		public KRequest<T> Request { get; set; }
 
 	}
 
@@ -97,6 +97,38 @@ namespace IngressCFHostUpdate.KServices.Kubernetes.WebhookServer.APIObjects
 		public string UID { get; set; }
 		[JsonPropertyName( "allowed" )]
 		public bool Allowed { get; set; } = true;
+	}
+
+	public class KIngRule
+	{
+		[JsonPropertyName( "host" )]
+		public string Host { get; set; }
+
+		[JsonPropertyName( "http" )]
+		public object Http { get; set; }
+	}
+
+	public class KIngSpec
+	{
+		[JsonPropertyName( "rules" )]
+		public KIngRule[] Rules { get; set; }
+	}
+
+	public class KIngress
+	{
+		[JsonPropertyName( "apiVersion" )]
+		public string APIVersion { get; set; }
+		[JsonPropertyName( "kind" )]
+		public string Kind { get; set; }
+
+		[JsonPropertyName( "metadata" )]
+		public object Metadata { get; set; }
+
+		[JsonPropertyName( "spec" )]
+		public KIngSpec Spec { get; set; }
+
+		[JsonPropertyName( "status" )]
+		public object Status { get; set; }
 	}
 
 	public class KAdmissionResponse

@@ -1,6 +1,8 @@
-﻿using IngressCFHostUpdate.KServices.CloudFlare.APIObjects;
+﻿using IngressCFHostUpdate.KServices;
+using IngressCFHostUpdate.KServices.CloudFlare.APIObjects;
 using IngressCFHostUpdate.KServices.Kubernetes.WebhookServer.APIObjects;
 using k8s;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,56 +14,36 @@ namespace IngressCFHostUpdate
 {
 	class Operations
 	{
-		public static async Task UpdateHosts()
+		private static IEnumerable<IHostOperator> GetHostOperators( params object[] Args )
 		{
-			Kubernetes Kube = new Kubernetes( KubernetesClientConfiguration.BuildDefaultConfig() );
-
-			string LoadBalancerIP = Kube.ListServiceForAllNamespaces().Items.Where( x => x.Spec.Type == "LoadBalancer" ).First().Status.LoadBalancer.Ingress.First().Ip;
-
-			string[] ManagedHosts = ( await Kube.ListIngressForAllNamespacesAsync() )
-				.Items
-				.SelectMany( x => x.Spec.Rules.Select( x => x.Host ) )
-				.ToArray()
-			;
-
-			IEnumerable<Zone> Zones = ( await KServices.CloudFlare.APIClient.List<Zone>() )
-				.Items
-				.Where( x => ManagedHosts.Any( h => h.EndsWith( x.Name ) ) );
-
-			foreach ( Zone Zone in Zones )
-			{
-				List<DNSRecord> OldRecords = ( await KServices.CloudFlare.APIClient.List<DNSRecord>( Zone.Id ) )
-					.Items
-					.Where( x => x.Type == "A" && x.Content == LoadBalancerIP )
-					.ToList();
-
-				int ZoneNameLen = Zone.Name.Length;
-				foreach ( string Host in ManagedHosts )
-				{
-					DNSRecord ActiveRecord = OldRecords.Where( x => Host.StartsWith( x.Name ) ).FirstOrDefault();
-					if ( ActiveRecord == null )
-					{
-						await KServices.CloudFlare.APIClient.Create(
-							new DNSRecord() { Type = "A", Name = Host.Substring( 0, Host.Length - ZoneNameLen - 1 ), Content = LoadBalancerIP }
-							, Zone.Id
-						);
-					}
-					else
-					{
-						OldRecords.Remove( ActiveRecord );
-					}
-				}
-
-				foreach ( DNSRecord OldRecord in OldRecords )
-				{
-					await KServices.CloudFlare.APIClient.Delete<DNSRecord>( OldRecord.ZoneId, OldRecord.Id );
-				}
-			}
+			Type IFace = typeof( IHostOperator );
+			return AppDomain.CurrentDomain.GetAssemblies()
+				.SelectMany( s => s.GetTypes() )
+				.Where( x => IFace.IsAssignableFrom( x ) && !x.IsInterface )
+				.Select( x => {
+					return ( IHostOperator ) Activator.CreateInstance( x, Args );
+				} );
 		}
 
-		public static void TriggerAdmission( KAdmissionReview AdmissionReview )
+		private static JsonSerializerOptions DebugJsonPrint = new() { WriteIndented = true };
+
+		public static void TriggerIngressAdmission( KAdmissionReview<KIngress> AdmissionReview )
 		{
-			Console.WriteLine( JsonSerializer.Serialize( AdmissionReview ) );
+			string[] OldHosts = AdmissionReview.Request.OldObject?.Spec?.Rules?.Select( x => x.Host ).ToArray() ?? Array.Empty<string>();
+			string[] NewHosts = AdmissionReview.Request.Object?.Spec?.Rules?.Select( x => x.Host ).ToArray() ?? Array.Empty<string>();
+
+			if ( !( OldHosts.Any() || NewHosts.Any() ) )
+				return;
+
+			Ext.GetLogger<Operations>().LogInformation( JsonSerializer.Serialize( AdmissionReview, DebugJsonPrint ) );
+
+			string[] RemovedHosts = OldHosts.Except( NewHosts ).ToArray();
+			string[] AddedHosts = NewHosts.Except( OldHosts ).ToArray();
+
+			foreach ( IHostOperator Op in GetHostOperators( AdmissionReview.Request.DryRun ) )
+			{
+				Op.Update( AddedHosts, RemovedHosts );
+			}
 		}
 
 	}

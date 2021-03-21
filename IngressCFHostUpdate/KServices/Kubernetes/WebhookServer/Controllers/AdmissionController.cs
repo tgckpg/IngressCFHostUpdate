@@ -18,9 +18,9 @@ namespace IngressCFHostUpdate.KServices.Kubernetes.WebhookServer.Controllers
 
 		[HttpPost]
 		[Route( "/validating-webhook" )]
-		public JsonResult ValidatingWebhook( [FromBody] KAdmissionReview AdmissionReview )
+		public JsonResult ValidatingWebhook( [FromBody] KAdmissionReview<KIngress> AdmissionReview )
 		{
-			Operations.TriggerAdmission( AdmissionReview );
+			Operations.TriggerIngressAdmission( AdmissionReview );
 
 			// Always returns true because we are only inspecting for ingress hosts
 			return new JsonResult( new KAdmissionResponse()
