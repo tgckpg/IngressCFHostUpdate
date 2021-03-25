@@ -16,6 +16,22 @@ namespace IngressNgxDNSSync.KServices.Kubernetes.WebhookServer.Controllers
 		[Route( "" )]
 		public JsonResult ProbeEndpoint() => new JsonResult( new { } );
 
+		[HttpGet]
+		[Route( "/sync" )]
+		public JsonResult Sync()
+		{
+			Operations.TriggerSync( false );
+			return new JsonResult( new { status = true, message = "OK" } );
+		}
+
+		[HttpGet]
+		[Route( "/test-sync" )]
+		public JsonResult TestSync()
+		{
+			Operations.TriggerSync( true );
+			return new JsonResult( new { status = true, message = "OK" } );
+		}
+
 		[HttpPost]
 		[Route( "/validating-webhook" )]
 		public JsonResult ValidatingWebhook( [FromBody] KAdmissionReview<KIngress> AdmissionReview )

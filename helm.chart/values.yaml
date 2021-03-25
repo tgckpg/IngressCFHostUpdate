@@ -1,10 +1,14 @@
 image:
-  repository: 192.168.80.4:32000/dns-sync
+  repository: penguinade/igx-dns-sync
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "b00009"
+  tag: "latest"
 
 imagePullSecrets: []
 
 serviceAccount:
   name: "dns-sync-account"
+
+providers:
+  cloudFlare:
+    apiToken:

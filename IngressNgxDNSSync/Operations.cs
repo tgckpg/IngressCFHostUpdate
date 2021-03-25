@@ -25,6 +25,8 @@ namespace IngressNgxDNSSync
 
 		public static void TriggerIngressAdmission( KAdmissionReview<KIngress> AdmissionReview )
 		{
+			Ext.GetLogger<Operations>().LogInformation( "Trigger Admission" );
+
 			string[] OldHosts = AdmissionReview.Request.OldObject?.Spec?.Rules?.Select( x => x.Host ).ToArray() ?? Array.Empty<string>();
 			string[] NewHosts = AdmissionReview.Request.Object?.Spec?.Rules?.Select( x => x.Host ).ToArray() ?? Array.Empty<string>();
 
@@ -43,6 +45,20 @@ namespace IngressNgxDNSSync
 			foreach ( IHostOperator Operator in Operators )
 			{
 				Operator.Update( AddedHosts, RemovedHosts );
+			}
+		}
+
+		public static void TriggerSync( bool DryRun )
+		{
+			Ext.GetLogger<Operations>().LogInformation( "Trigger Sync" );
+
+			IHostOperator[] Operators = GetHostOperators( DryRun ).ToArray();
+			if ( !Operators.Any() )
+				Ext.GetLogger<Operations>().LogError( "No available operators" );
+
+			foreach ( IHostOperator Operator in Operators )
+			{
+				Operator.Sync();
 			}
 		}
 

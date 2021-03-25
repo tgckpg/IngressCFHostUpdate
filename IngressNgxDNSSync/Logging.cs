@@ -19,30 +19,53 @@ namespace IngressNgxDNSSync.Logging
     public class ColorConsoleLogger : ILogger
     {
         private readonly string _name;
+        private readonly string ClassName;
         private readonly ColorConsoleLoggerConfiguration _config;
 
         public ColorConsoleLogger( string name, ColorConsoleLoggerConfiguration config )
-            => (_name, _config) = (name, config);
+		{
+            (_name, _config) = (name, config);
+            ClassName = _name.Split( "." ).Last();
+		}
 
         public IDisposable BeginScope<TState>( TState state ) => default;
 
         public bool IsEnabled( LogLevel logLevel )
             => logLevel == _config.LogLevel;
 
+        public Dictionary<LogLevel, string> LogLevelMap = new() {
+            { LogLevel.Information, "INFO" },
+            { LogLevel.Error, "ERROR" },
+            { LogLevel.Warning, "WARN" },
+        };
+
+
         public void Log<TState>( LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter )
         {
             if ( !IsEnabled( logLevel ) )
                 return;
 
+            if ( _name.StartsWith( "Microsoft." ) )
+            {
+                System.Diagnostics.Debug.WriteLine( formatter( state, exception ) );
+                return;
+            }
+
             if ( _config.EventId == 0 || _config.EventId == eventId.Id )
             {
                 ConsoleColor originalColor = Console.ForegroundColor;
 
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.Write( $"[{DateTime.Now:dd-MM-yyyy H:mm:ss}]" );
+                Console.ForegroundColor = originalColor;
                 Console.ForegroundColor = _config.Color;
-                Console.Write( $"[{eventId.Id}:{logLevel}]" );
+                Console.Write( $"[{LogLevelMap[ logLevel ]}]" );
+                Console.ForegroundColor = originalColor;
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+				Console.Write( $"[{ClassName}]" );
                 Console.ForegroundColor = originalColor;
 
-                Console.WriteLine( $" {_name} - {formatter( state, exception )}" );
+                Console.WriteLine( $" {formatter( state, exception )}" );
             }
         }
     }

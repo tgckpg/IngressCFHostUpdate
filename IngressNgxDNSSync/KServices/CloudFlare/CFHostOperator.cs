@@ -54,7 +54,7 @@ namespace IngressNgxDNSSync.KServices.CloudFlare
 
 				foreach ( DNSRecord OldRecord in OldRecords )
 				{
-					await APIClient.Delete<DNSRecord>( DryRun, OldRecord.ZoneId, OldRecord.Id );
+					await APIClient.Delete<DNSRecord>( DryRun, OldRecord, OldRecord.ZoneId, OldRecord.Id );
 				}
 			}
 		}
@@ -91,7 +91,7 @@ namespace IngressNgxDNSSync.KServices.CloudFlare
 					{
 						await APIClient.Create(
 							new DNSRecord() { Type = "A", Name = Host.Substring( 0, Host.Length - ZoneNameLen - 1 ), Content = PublicIP }
-							, false, Zone.Id
+							, DryRun, Zone.Id
 						);
 					}
 					else
@@ -102,7 +102,7 @@ namespace IngressNgxDNSSync.KServices.CloudFlare
 
 				foreach ( DNSRecord OldRecord in OldRecords )
 				{
-					await APIClient.Delete<DNSRecord>( false, OldRecord.ZoneId, OldRecord.Id );
+					await APIClient.Delete<DNSRecord>( DryRun, OldRecord, OldRecord.ZoneId, OldRecord.Id );
 				}
 			}
 		}

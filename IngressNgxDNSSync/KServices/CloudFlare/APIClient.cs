@@ -1,4 +1,5 @@
 ﻿using IngressNgxDNSSync.KServices.CloudFlare.APIObjects;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -39,7 +40,7 @@ namespace IngressNgxDNSSync.KServices.CloudFlare
 				Url = string.Format( Url, Args );
 			}
 
-			// LogCreate<T>( APIObject );
+			Ext.GetLogger<CFHostOperator>().LogInformation( ( DryRun ? "Create(DryRun): " : "Create: " ) + APIObject.ToString() );
 
 			if ( DryRun )
 				return new Result<T>() { Item = APIObject };
@@ -71,7 +72,7 @@ namespace IngressNgxDNSSync.KServices.CloudFlare
 			return await JsonSerializer.DeserializeAsync<Result<T>>( RespStream );
 		}
 
-		public static async Task<DeleteResult> Delete<T>( bool DryRun, params string[] Args )
+		public static async Task<DeleteResult> Delete<T>( bool DryRun, T APIObject, params string[] Args )
 		{
 			string Url = ServiceURI + "/" + typeof( T ).GetApiEndPoint().Delete;
 			if ( Args.Any() )
@@ -79,7 +80,7 @@ namespace IngressNgxDNSSync.KServices.CloudFlare
 				Url = string.Format( Url, Args );
 			}
 
-			// LogDelete<T>( Args );
+			Ext.GetLogger<CFHostOperator>().LogInformation( ( DryRun ? "Delete(DryRun): " : "Delete: " ) + APIObject.ToString() );
 
 			if ( DryRun )
 				return new DeleteResult();

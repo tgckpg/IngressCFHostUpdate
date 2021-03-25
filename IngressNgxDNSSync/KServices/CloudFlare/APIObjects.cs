@@ -160,6 +160,11 @@ namespace IngressNgxDNSSync.KServices.CloudFlare.APIObjects
 		public Dictionary<string, string> Data { get; set; }
 		[JsonPropertyName( "meta" )]
 		public Meta Meta { get; set; }
+
+		public override string ToString()
+		{
+			return $"[DNSRecord: {Type} {Name} {Content}]";
+		}
 	}
 
 	public class Meta
