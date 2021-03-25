@@ -10,6 +10,9 @@ rules:
   - apiGroups: [""]
     resources: ["services"]
     verbs:     ["get", "list"]
+  - apiGroups: ["extensions", "networking.k8s.io"]
+    resources: ["ingresses"]
+    verbs:     ["get", "list"]
 ---
 # Reference: ingress-nginx/templates/admission-webhooks/job-patch/clusterrolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1

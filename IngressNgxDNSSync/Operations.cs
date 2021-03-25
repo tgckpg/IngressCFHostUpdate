@@ -11,6 +11,8 @@ namespace IngressNgxDNSSync
 {
 	class Operations
 	{
+		internal static volatile bool LogJsonObjects = false;
+
 		private static IEnumerable<IHostOperator> GetHostOperators( params object[] Args )
 		{
 			Type IFace = typeof( IHostOperator );
@@ -25,7 +27,7 @@ namespace IngressNgxDNSSync
 
 		public static void TriggerIngressAdmission( KAdmissionReview<KIngress> AdmissionReview )
 		{
-			Ext.GetLogger<Operations>().LogInformation( "Trigger Admission" );
+			Ext.GetLogger<Operations>().LogInformation( $"Trigger Admission: {AdmissionReview.Request.UID}" );
 
 			string[] OldHosts = AdmissionReview.Request.OldObject?.Spec?.Rules?.Select( x => x.Host ).ToArray() ?? Array.Empty<string>();
 			string[] NewHosts = AdmissionReview.Request.Object?.Spec?.Rules?.Select( x => x.Host ).ToArray() ?? Array.Empty<string>();
@@ -33,7 +35,8 @@ namespace IngressNgxDNSSync
 			if ( !( OldHosts.Any() || NewHosts.Any() ) )
 				return;
 
-			Ext.GetLogger<Operations>().LogInformation( JsonSerializer.Serialize( AdmissionReview, DebugJsonPrint ) );
+			if ( LogJsonObjects )
+				Ext.GetLogger<Operations>().LogInformation( JsonSerializer.Serialize( AdmissionReview, DebugJsonPrint ) );
 
 			string[] RemovedHosts = OldHosts.Except( NewHosts ).ToArray();
 			string[] AddedHosts = NewHosts.Except( OldHosts ).ToArray();

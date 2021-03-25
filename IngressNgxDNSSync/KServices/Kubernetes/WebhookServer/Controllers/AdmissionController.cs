@@ -24,6 +24,14 @@ namespace IngressNgxDNSSync.KServices.Kubernetes.WebhookServer.Controllers
 			return new JsonResult( new { status = true, message = "OK" } );
 		}
 
+		[HttpPost]
+		[Route( "/operation-log/json-objects" )]
+		public JsonResult Sync( [FromForm] bool Enable )
+		{
+			Operations.LogJsonObjects = Enable;
+			return new JsonResult( new { status = true, message = "OK" } );
+		}
+
 		[HttpGet]
 		[Route( "/test-sync" )]
 		public JsonResult TestSync()

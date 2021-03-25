@@ -25,6 +25,9 @@ spec:
               value: /certs/cert
             - name: CA_KEY
               value: /certs/key
+          envFrom:
+            - secretRef:
+                name: dns-sync-secrets
           volumeMounts:
             - name: webhook-cert
               mountPath: /certs/

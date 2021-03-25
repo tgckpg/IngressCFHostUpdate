@@ -1,0 +1,29 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: dns-sync-cronjob
+  labels:
+    {{- include "helm.labels" . | nindent 4 }}
+spec:
+  schedule: "0 0 * * 0"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            {{- include "helm.labels" . | nindent 12 }}
+        spec:
+          containers:
+            - name: app
+              image: curlimages/curl:7.75.0
+              imagePullPolicy: IfNotPresent
+              args:
+                - curl
+                - -k
+                - https://dns-sync.$(POD_NAMESPACE).svc/sync
+              env:
+                - name: POD_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+          restartPolicy: Never
