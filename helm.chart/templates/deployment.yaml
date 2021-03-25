@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "helm.fullname" . }}
+  labels:
+    {{- include "helm.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "helm.selectorLabels" . | nindent 6 }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        {{- include "helm.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: CA_CERT
+              value: /certs/cert
+            - name: CA_KEY
+              value: /certs/key
+          volumeMounts:
+            - name: webhook-cert
+              mountPath: /certs/
+              readOnly: true
+      volumes:
+        - name: webhook-cert
+          secret:
+            secretName: dns-sync
+      serviceAccount: {{ .Values.serviceAccount.name }}
