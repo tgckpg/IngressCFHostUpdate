@@ -12,3 +12,7 @@ serviceAccount:
 providers:
   cloudFlare:
     apiToken:
+
+controller:
+  nodeSelector:
+    kubernetes.io/os: linux

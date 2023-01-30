@@ -32,6 +32,9 @@ spec:
             - name: webhook-cert
               mountPath: /certs/
               readOnly: true
+    {{- if .Values.controller.nodeSelector }}
+      nodeSelector: {{ toYaml .Values.controller.nodeSelector | nindent 8 }}
+    {{- end }}
       volumes:
         - name: webhook-cert
           secret:
