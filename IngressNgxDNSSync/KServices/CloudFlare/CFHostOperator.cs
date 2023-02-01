@@ -89,8 +89,12 @@ namespace IngressNgxDNSSync.KServices.CloudFlare
 					DNSRecord ActiveRecord = OldRecords.Where( x => Host.StartsWith( x.Name ) ).FirstOrDefault();
 					if ( ActiveRecord == null )
 					{
+						string Sub = Host[ ..Math.Max( 0, Host.Length - ZoneNameLen - 1 ) ];
+						if ( string.IsNullOrEmpty( Sub ) )
+							Sub = "@";
+
 						await APIClient.Create(
-							new DNSRecord() { Type = "A", Name = Host.Substring( 0, Host.Length - ZoneNameLen - 1 ), Content = PublicIP }
+							new DNSRecord() { Type = "A", Name = Sub, Content = PublicIP }
 							, DryRun, Zone.Id
 						);
 					}
