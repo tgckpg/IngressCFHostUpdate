@@ -2,7 +2,7 @@ image:
   repository: penguinade/igx-dns-sync
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: "2023.02.01.02"
 
 imagePullSecrets: []
 
