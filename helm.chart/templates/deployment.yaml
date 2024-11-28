@@ -16,6 +16,13 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}
+          command:
+            - "/ingress-dns-sync"
+            - "--tls-cert-file"
+            - "/certs/cert"
+            - "--tls-private-key-file"
+            - "/certs/key"
+            - "--v=1"
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
